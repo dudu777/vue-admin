@@ -15,57 +15,81 @@
 </template>
 
 <script>
-export default {
-  data () {
-    return {
-      ruleForm: {
-        account: '',
-        password: ''
-      },
-      checkRules: {
-        account: [{require: true, message: '请输入账号'}],
-        password: [{require: true, message: '请输入账号'}]
-      },
-      checked: true,
-      logining: false
+  import { requestLogin } from '../api/api'
+  export default {
+    data() {
+      return {
+        logining: false,
+        ruleForm: {
+          account: 'admin',
+          checkPass: '123456'
+        },
+        checkRules: {
+          account: [
+            { required: true, message: '请输入账号', trigger: 'blur' },
+          ],
+          checkPass: [
+            { required: true, message: '请输入密码', trigger: 'blur' },
+          ]
+        },
+        checked: true
+      };
+    },
+    methods: {
+      handleSubmit(ev) {
+        var _this = this;
 
-    }
-  },
-  methods: {
-    handleSubmit () {
-      this.$refs.ruleForm.validate((valid) => {
-        if (valid) {
-          this.logining = true
-          var loginParams = { username: this.ruleForm.account, password: this.ruleForm.password }
-          console.log(loginParams)
-        }
-      })
+        this.$refs.ruleForm.validate((valid) => {
+          if (valid) {
+            console.log(this.model)
+            //_this.$router.replace('/table');
+            this.logining = true;
+
+            var loginParams = { username: this.ruleForm.account, password: this.ruleForm.checkPass };
+            requestLogin(loginParams).then(data => {
+              this.logining = false;
+              let { msg, code, user } = data;
+              if (code !== 200) {
+
+                this.$message({
+                  message: msg,
+                  type: 'error'
+                });
+              } else {
+
+                sessionStorage.setItem('user', JSON.stringify(user));
+                this.$router.push({ path: '/main' });
+              }
+            });
+          } else {
+            return false;
+          }
+        });
+      }
     }
   }
 
-}
 </script>
 
 <style lang="less" scoped>
-.login-container {
-  -webkit-border-radius: 5px;
-  border-radius: 5px;
-  -moz-border-radius: 5px;
-  background-clip: padding-box;
-  margin: 180px auto;
-  width: 350px;
-  padding: 35px 35px 15px 35px;
-  background: #fff;
-  border: 1px solid #eaeaea;
-  box-shadow: 0 0 25px #cac6c6;
-  .title {
-    margin: 0px auto 40px auto;
-    text-align: center;
-    color: #505458;
+  .login-container {
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    background-clip: padding-box;//背景被裁剪到
+    margin: 180px auto;
+    width: 350px;
+    padding: 35px 35px 15px 35px;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    box-shadow: 0 0 25px #cac6c6;
+    .title {
+      margin: 0px auto 40px auto;
+      text-align: center;
+      color: #505458;
+    }
+    .remember {
+      margin: 0px 0px 35px 0px;
+    }
   }
-  .remember {
-    margin: 0px 0px 35px 0px;
-  }
-}
-
 </style>
